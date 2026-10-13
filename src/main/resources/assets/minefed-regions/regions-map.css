@@ -1,0 +1,30 @@
+.minefed-region-label {
+    position: relative;
+    transform: translate(-50%, -50%);
+    color: #f4f8fc;
+    font: 600 14px/1.45 system-ui, sans-serif;
+    text-align: center;
+    white-space: nowrap;
+    text-shadow: 0 1px 3px #07121e, 0 0 5px #07121e;
+    pointer-events: auto;
+}
+.minefed-region-label summary {
+    display: block;
+    cursor: pointer;
+    list-style: none;
+    padding: 3px 6px;
+}
+.minefed-region-label summary::-webkit-details-marker { display: none; }
+.minefed-region-label summary:focus-visible { outline: 2px solid #8bd3ff; }
+.minefed-region-label[open] span {
+    display: block;
+    max-width: min(360px, 75vw);
+    white-space: normal;
+    min-width: 140px;
+    padding: 8px 12px;
+    border: 1px solid #82afce;
+    border-radius: 5px;
+    background: #102334ee;
+    font-weight: 400;
+}
+.minefed-region-detail { max-width: 360px; white-space: normal; }
