@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "team.minefed.regions.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": ["ServerCommandSourceAccessor"],
+  "injectors": { "defaultRequire": 1 }
+}

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "minefed-regions",
+  "version": "${version}",
+  "name": "Minefed Regions",
+  "description": "Flexible administrative territories, delegated management and addresses for Minefed.",
+  "authors": ["Minefed"],
+  "license": "MIT",
+  "environment": "*",
+  "mixins": ["minefed-regions.mixins.json"],
+  "entrypoints": {
+    "main": ["team.minefed.regions.RegionsMod"],
+    "client": ["team.minefed.regions.client.RegionsClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "fabric-api": "*",
+    "minecraft": "=1.20.4",
+    "java": ">=17"
+  },
+  "suggests": { "bluemap": ">=5.3" }
+}
