@@ -98,7 +98,8 @@ public final class SnapshotValidator {
         return Character.isWhitespace(point) || Character.isSpaceChar(point);
     }
 
-    private static int validateCoordinates(double[][][][] coordinates) {
+    /** Validates structure only and returns the vertex count, including each closing point. */
+    public static int validateCoordinates(double[][][][] coordinates) {
         require(coordinates != null && coordinates.length > 0, "Empty MultiPolygon");
         int count = 0;
         for (double[][][] polygon : coordinates) {
