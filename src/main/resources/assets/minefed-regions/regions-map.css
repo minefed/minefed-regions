@@ -1,30 +1,63 @@
 .minefed-region-label {
     position: relative;
     transform: translate(-50%, -50%);
-    color: #f4f8fc;
-    font: 600 14px/1.45 system-ui, sans-serif;
+    color: #4a2c8f;
+    font: 700 15px/1.3 var(--ui-font, system-ui, sans-serif);
+    letter-spacing: .12em;
     text-align: center;
     white-space: nowrap;
-    text-shadow: 0 1px 3px #07121e, 0 0 5px #07121e;
+    text-shadow: 0 0 2px #fff, 0 0 4px #fff, 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;
     pointer-events: auto;
-}
-.minefed-region-label summary {
-    display: block;
     cursor: pointer;
-    list-style: none;
     padding: 3px 6px;
+    user-select: none;
 }
-.minefed-region-label summary::-webkit-details-marker { display: none; }
-.minefed-region-label summary:focus-visible { outline: 2px solid #8bd3ff; }
-.minefed-region-label[open] span {
+.minefed-region-label:hover .minefed-region-name { text-decoration: underline; }
+.minefed-region-level-1 { font-size: 13px; font-weight: 600; letter-spacing: .06em; color: #5b3f99; }
+.minefed-region-level-2, .minefed-region-level-3 { font-size: 12px; font-weight: 500; letter-spacing: 0; color: #6a4fa3; }
+.minefed-region-name { display: block; }
+.minefed-region-address { display: none; }
+.minefed-region-open .minefed-region-address {
     display: block;
     max-width: min(360px, 75vw);
-    white-space: normal;
     min-width: 140px;
+    margin-top: 4px;
     padding: 8px 12px;
-    border: 1px solid #82afce;
-    border-radius: 5px;
-    background: #102334ee;
+    white-space: normal;
+    letter-spacing: 0;
+    font-size: 13px;
     font-weight: 400;
+    color: #202124;
+    text-shadow: none;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
 }
 .minefed-region-detail { max-width: 360px; white-space: normal; }
+
+/* region details in the map UI place panel */
+.minefed-region-children {
+    border-top: 1px solid var(--ui-line, #dadce0);
+    padding: 8px 0 12px;
+    font: 14px/1.45 var(--ui-font, system-ui, sans-serif);
+    color: var(--ui-text, #202124);
+}
+.minefed-region-children h3 { margin: 8px 24px 2px; font-size: 16px; font-weight: 500; }
+.minefed-region-children p { margin: 0 24px 8px; font-size: 12px; color: var(--ui-text-2, #5f6368); }
+.minefed-region-child {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 24px;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.minefed-region-child:hover { background: var(--ui-hover, rgba(60, 64, 67, .08)); }
+.minefed-region-child-name { font-weight: 500; }
+.minefed-region-child-meta { font-size: 12px; color: var(--ui-text-2, #5f6368); white-space: nowrap; }

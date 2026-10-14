@@ -15,6 +15,23 @@ final class RegionMapData {
                 .replace("\"", "&quot;").replace("'", "&#39;");
     }
 
+    /** Top-level boundaries stay bold; subdivisions that appear when zooming in are thinner. */
+    static int lineWidth(int level) {
+        return level <= 0 ? 4 : 2;
+    }
+
+    /** Width of the light casing drawn under each boundary so it stays visible on any terrain. */
+    static int casingWidth(int level) {
+        return lineWidth(level) + (level <= 0 ? 5 : 3);
+    }
+
+    /** Label markup; callers pass already escaped text. Deeper levels use smaller label styles. */
+    static String labelHtml(String escapedName, String escapedAddress, int level) {
+        return "<div class=\"minefed-region-label minefed-region-level-" + Math.max(0, Math.min(level, 3)) + "\">"
+                + "<span class=\"minefed-region-name\">" + escapedName + "</span>"
+                + "<span class=\"minefed-region-address\">" + escapedAddress + "</span></div>";
+    }
+
     static String markerPrefix(String id, String parentId, int level) {
         Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
         return "r." + encoder.encodeToString(id.getBytes(StandardCharsets.UTF_8)) + "."

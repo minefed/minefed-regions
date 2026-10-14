@@ -38,6 +38,24 @@ class RegionMapDataTest {
     }
 
     @Test
+    void topLevelBoundariesAreBolderAndAlwaysCased() {
+        assertTrue(RegionMapData.lineWidth(0) > RegionMapData.lineWidth(1));
+        assertEquals(RegionMapData.lineWidth(1), RegionMapData.lineWidth(5));
+        for (int level = 0; level < 4; level++) {
+            assertTrue(RegionMapData.casingWidth(level) > RegionMapData.lineWidth(level));
+        }
+    }
+
+    @Test
+    void labelMarkupKeepsEscapedTextAndClampsLevelClass() {
+        String html = RegionMapData.labelHtml("&lt;중앙구&gt;", "시 &amp; 구", 9);
+        assertTrue(html.contains("minefed-region-level-3"));
+        assertTrue(html.contains("<span class=\"minefed-region-name\">&lt;중앙구&gt;</span>"));
+        assertTrue(html.contains("<span class=\"minefed-region-address\">시 &amp; 구</span>"));
+        assertTrue(RegionMapData.labelHtml("a", "b", -1).contains("minefed-region-level-0"));
+    }
+
+    @Test
     void closesExactlyOnceWithoutMutatingSnapshot() {
         double[][] ring = {{0, 0}, {10, 0}, {0, 10}, {0, 0}};
         double[][] open = RegionMapData.openRing(ring);

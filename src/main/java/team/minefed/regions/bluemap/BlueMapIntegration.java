@@ -128,25 +128,35 @@ public final class BlueMapIntegration {
                 double[][][] polygon = polygons[p];
                 double[] anchor = RegionMapData.labelPosition(polygon);
                 Vector3d position = new Vector3d(anchor[0], 64, anchor[1]);
-                ShapeMarker shape = new ShapeMarker(region.name(), position, shape(polygon[0]), 64);
-                for (int r = 1; r < polygon.length; r++) shape.getHoles().add(shape(polygon[r]));
-                shape.setLineColor(new Color(110, 183, 232, 0.9f));
-                shape.setLineWidth(level == 0 ? 3 : 2);
-                shape.setFillColor(new Color(0, 0, 0, 0f));
-                shape.setMaxDistance(Double.MAX_VALUE);
-                shape.setDepthTestEnabled(false);
-                shape.setDetail("<div class=\"minefed-region-detail\">" + address + "</div>");
-                shape.setListed(false);
+                // The web script draws each casing under its line and hides levels by camera distance.
+                ShapeMarker casing = boundary(region.name(), position, polygon,
+                        new Color(255, 255, 255, 0.78f), RegionMapData.casingWidth(level), address);
+                result.put(key + "casing." + p, casing);
+                ShapeMarker shape = boundary(region.name(), position, polygon,
+                        level == 0 ? new Color(94, 53, 177, 1f) : new Color(126, 87, 194, 0.92f),
+                        RegionMapData.lineWidth(level), address);
                 result.put(key + "shape." + p, shape);
-                HtmlMarker label = new HtmlMarker(region.name(), position,
-                        "<details class=\"minefed-region-label\"><summary>" + name
-                                + "</summary><span>" + address + "</span></details>");
+                HtmlMarker label = new HtmlMarker(region.name(), position, RegionMapData.labelHtml(name, address, level));
                 label.setMaxDistance(Double.MAX_VALUE);
                 label.setListed(false);
                 result.put(key + "label." + p, label);
             }
         }
         return result;
+    }
+
+    private static ShapeMarker boundary(String label, Vector3d position, double[][][] polygon,
+                                        Color lineColor, int lineWidth, String escapedAddress) {
+        ShapeMarker shape = new ShapeMarker(label, position, shape(polygon[0]), 64);
+        for (int r = 1; r < polygon.length; r++) shape.getHoles().add(shape(polygon[r]));
+        shape.setLineColor(lineColor);
+        shape.setLineWidth(lineWidth);
+        shape.setFillColor(new Color(0, 0, 0, 0f));
+        shape.setMaxDistance(Double.MAX_VALUE);
+        shape.setDepthTestEnabled(false);
+        shape.setDetail("<div class=\"minefed-region-detail\">" + escapedAddress + "</div>");
+        shape.setListed(false);
+        return shape;
     }
 
     private static Shape shape(double[][] closedRing) {
