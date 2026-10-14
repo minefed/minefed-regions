@@ -336,8 +336,15 @@ region import create root free-union-command-geometry.geojson 자유인연합국
 클라이언트에는 주소와 동기화 상태만 보내며 관리자 명단이나 서버 토큰은 보내지 않는다.
 
 서버에 BlueMap이 있으면 `행정구역` 마커 레이어와 필요한 웹 자산을 자동 등록한다.
-별도의 프런트엔드 서버 없이 2D·3D에서 이름·경계를 표시하고 이름을 누르면 전체 주소를
-확인할 수 있다. 지도를 확대할수록 각 계통의 더 깊은 지역을 표시한다.
+별도의 프런트엔드 서버 없이 2D·3D에서 이름·경계를 표시한다. 경계는 흰 테두리 위의
+굵은 선으로 그리며, 지도를 확대하면 상위 경계는 그대로 두고 더 깊은 지역의 경계를
+추가로 표시한다. 이름은 각 계통에서 지금 확대 수준의 가장 깊은 지역만 표시한다.
+지역 안쪽을 눌러도 지도 클릭이 막히지 않는다.
+
+Minefed BlueMap 빌드의 새 지도 화면에서는 이름을 누르면 장소 패널에 지역 범위 강조,
+전체 주소, 면적, 상위·하위 지역이 열린다. 검색, `행정구역` 칩, 지도를 누른 위치의
+주소와 저장한 장소에도 지역 정보를 제공한다. 이 화면이 없는 BlueMap에서는 이름을
+누르면 전체 주소를 펼친다.
 
 ```text
 /region display <지역UUID|here> auto
@@ -376,8 +383,8 @@ node --test src/test/js/regions-map.test.cjs
 
 Linux/macOS에서는 `./gradlew test remapJar`를 사용한다. 결과는
 `build/libs/minefed-regions-1.0.0.jar`다. 소스 JAR·개발용 JAR 대신 이 실행 JAR를 사용한다.
-Java 테스트는 모델·경계 선택·설정 검증을, Node 테스트는 BlueMap 표시 단계 계산을
-검사한다. 실제 HUD 렌더링, BlueMap 웹 표시와 운영 API 연결 확인은 별도의 실행 검증이다.
+Java 테스트는 모델·경계 선택·설정 검증과 경계 굵기·이름 마크업을, Node 테스트는
+BlueMap 표시 단계 계산, 경계 그리는 순서, 위치별 지역 찾기와 장소 패널 연동을 검사한다. 실제 HUD 렌더링, BlueMap 웹 표시와 운영 API 연결 확인은 별도의 실행 검증이다.
 실제로 수행한 테스트와 서버 실행 검증의 범위·결과는 [검증 기록](docs/VALIDATION.md)에 남긴다.
 
 빌드에는 Minecraft/Fabric API/BlueMap API를 사용하지만 해당 외부 JAR를 모드 안에
