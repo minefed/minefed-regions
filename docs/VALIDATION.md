@@ -1,5 +1,51 @@
 # 1.0.0 검증 기록
 
+## 2026-10-14 GeoJSON 콘솔 가져오기
+
+Java 17.0.20.1 / Gradle 8.12.1 / Fabric Loom 1.10.5에서 `test build` 성공.
+Minecraft 1.20.4 / Fabric Loader 0.18.4 대상이며 Java 17 바이트코드를 생성했다.
+Windows의 한글 경로를 Java 17 테스트 실행기가 읽을 수 있도록 Gradle 실행에
+`-Dorg.gradle.jvmargs="-Xmx1G -Dfile.encoding=MS949"`를 사용했다. 소스 컴파일과
+GeoJSON 파일·HTTP 본문의 인코딩은 UTF-8이다.
+
+- 전체 JUnit 49개 중 47개 통과, 실패 0개, 건너뜀 2개.
+  기존 실제 Go/PostgreSQL 통합 검사는 활성화하지 않았으며, Windows에서는
+  심볼릭 링크 생성 권한이 없어 링크 테스트 1개를 건너뛰었다.
+- 같은 `GeoJsonImportTest`의 12개 메서드를 격리된 Ubuntu WSL의 Java 17에서
+  실행하여 모두 통과했다. 외부·내부 파일 링크와 imports 디렉터리 링크의 거부도
+  실제 심볼릭 링크로 확인했다.
+- Fabric JUnit 런타임에서 Brigadier와 기존 `RegionController.console`을 사용해
+  콘솔·RCON 허용, 일반·OP 플레이어·명령 블록·`execute as` 차단을 검사했다.
+- loopback 모의 HTTP API로 create/geometry 본문, UUID 생성, `parentId: null`,
+  공백 포함 이름, 인증 헤더·worldId, 파일 메타데이터 배제, 전체 경계 교체와 기존
+  지역 속성 보존, 스냅샷·캐시·지도 발행 콜백 및 최종 UUID·버전 메시지를 확인했다.
+- 대기 중인 요청의 expectedRevision 고정, 버전 충돌·중복 이름 거부, 오프라인 수정
+  차단, 타임아웃의 결과 불확실성 안내와 자동 재전송 금지를 확인했다.
+- validate는 오프라인에서 동작하며 변경 API·캐시·스냅샷을 수정하지 않는다.
+  파일 1 MiB, UTF-8로 직렬화한 전체 요청 512 KiB, 폐합점 포함 4,096개 정점의
+  경계값과 초과 거부, 잘못된 JSON·UTF-8·좌표·고리·경로를 검사했다.
+- 기존 지도 JavaScript 검사 6개 모두 통과했다.
+
+실제 파일 검사는 `MINEFED_IMPORT_FIXTURES_DIR`에 원본 파일의 디렉터리를 지정해
+수행했다. 모든 좌표 값·순서·분리 영역·구멍 및 원본 바이트 불변을 확인했다.
+
+| 파일 | 영역 | 고리 | 폐합점 제외 정점 | 폐합점 포함 정점 |
+| --- | ---: | ---: | ---: | ---: |
+| `minefed-command-geometry.geojson` | 1 | 10 | 3,824 | 3,834 |
+| `free-union-command-geometry.geojson` | 2 | 4 | 1,480 | 1,484 |
+
+입력 파일 SHA-256:
+
+- minefed: `ca3b58be54d18f95e4f7837ed9d4d671860c2b79399f29c47e717b01d65a04c4`
+- free-union: `9441210e8be1c3a093bbc728a2d69bb48941b1aa2dcf99f0f7025ba25f3751d4`
+
+이 검증에서는 운영 서버·운영 API를 사용하거나 파일을 업로드하지 않았다.
+실제 두 파일은 파싱·구조 검증에만 사용했으며 위상·실제 등록 가능성은 판정하지 않았다.
+새 기능의 실제 게임 서버·RCON 연결·HUD 화면을 실행한 검사는 아니며, 아래의
+최초 구현 당시 실제 서버 검증 기록과 구분한다.
+
+## 최초 구현 검증
+
 2026-10-13에 개발용 격리 환경에서 수행했다. 운영 서버, 운영 API와 운영 DB는
 변경하지 않았다. 아래 결과는 이 저장소의 최초 1.0.0 구현에 대한 기록이다.
 

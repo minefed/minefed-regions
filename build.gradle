@@ -26,7 +26,10 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'com.google.code.gson:gson:2.10.1'
+    testImplementation 'org.mockito:mockito-core:5.14.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // Apply Fabric's named-package access fixes before registry/player classes are loaded by JUnit.
+    testRuntimeOnly "net.fabricmc:fabric-loader-junit:${project.loader_version}"
 }
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -41,7 +44,10 @@ processResources {
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') { expand version: project.version }
 }
-test { useJUnitPlatform() }
+test {
+    useJUnitPlatform()
+    systemProperty 'fabric.side', 'server'
+}
 tasks.withType(AbstractArchiveTask).configureEach {
     preserveFileTimestamps = false
     reproducibleFileOrder = true

@@ -1,6 +1,7 @@
 package team.minefed.regions.server;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.IOException;
@@ -17,7 +18,9 @@ import team.minefed.regions.model.SnapshotValidator;
 /** Called on the dedicated worker only. Neither credentials nor snapshots go to game clients. */
 public final class RegionApi {
     public static final Gson JSON = new Gson();
+    private static final Gson COMMAND_JSON = new GsonBuilder().serializeNulls().create();
     private static final int MAX_BODY = 8 * 1024 * 1024;
+    public static final int MAX_COMMAND_BYTES = 512 * 1024;
     private final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5))
             .followRedirects(HttpClient.Redirect.NEVER).build();
     private final ServerConfig config;
@@ -53,7 +56,13 @@ public final class RegionApi {
                 .timeout(timeout).header("Authorization", "Bearer " + token)
                 .header("Accept", "application/json");
         if (body == null) request.GET();
-        else request.header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(JSON.toJson(body)));
+        else {
+            // Check the actual UTF-8 wire body, including identity, revision, name and JSON escaping.
+            byte[] serialized = COMMAND_JSON.toJson(body).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            if (serialized.length > MAX_COMMAND_BYTES)
+                throw new IllegalArgumentException("API 요청 본문 전체는 512 KiB 이하여야 합니다.");
+            request.header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofByteArray(serialized));
+        }
         var pending = client.sendAsync(request.build(), info -> new LimitedBodySubscriber(MAX_BODY));
         HttpResponse<byte[]> response;
         try { response = pending.get(timeout.toMillis(),TimeUnit.MILLISECONDS); }

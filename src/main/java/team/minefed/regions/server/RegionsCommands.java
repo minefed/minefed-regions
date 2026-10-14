@@ -86,7 +86,8 @@ public final class RegionsCommands {
                 "/region status | list [페이지] | info <UUID|here> | wand | select\n"
                 +"create <상위 UUID|root> <이름> | rename <UUID|here> <이름> | boundary <UUID|here>\n"
                 +"move <UUID|here> <상위 UUID|root> | delete <UUID|here> confirm | display <UUID|here> <단계|auto>\n"
-                +"manager grant|revoke <UUID|here> <닉네임|UUID> | admin grant|revoke <닉네임|UUID> | history | undo <이력 UUID>")));
+                +"manager grant|revoke <UUID|here> <닉네임|UUID> | admin grant|revoke <닉네임|UUID> | history | undo <이력 UUID>\n"
+                +"import validate <파일명> | import create <root|상위UUID> <파일명> <이름...> | import boundary <UUID> <파일명> (콘솔/RCON)")));
         root.then(literal("status").executes(ctx->safely(ctx,c->say(c.getSource(),
                 "API " +(control().online()?"연결됨":"연결 끊김 · 조회만 가능")+" · 버전 "+control().snapshot().revision()+" · 지역 "+control().snapshot().regions().size()))));
         root.then(literal("list").executes(ctx->safely(ctx,c->list(c,1)))
@@ -102,6 +103,7 @@ public final class RegionsCommands {
             return say(c.getSource(),"블록 우클릭: 지점 추가 / 웅크려 우클릭: 마지막 지점 취소. 좌표는 블록의 X/Z 모서리입니다.");
         })));
         root.then(selectionCommands());
+        root.then(importCommands());
         root.then(literal("create").then(argument("parent",StringArgumentType.word())
                 .then(argument("name",StringArgumentType.greedyString()).executes(ctx->safely(ctx,c->{
                     JsonObject body=operation("create"); body.addProperty("regionId",UUID.randomUUID().toString());
@@ -141,6 +143,20 @@ public final class RegionsCommands {
             JsonObject body=operation("undo");body.addProperty("historyId",UUID.fromString(word(c,"history")).toString());return control().mutate(c.getSource(),body);
         }))));
         dispatcher.register(root);
+    }
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<ServerCommandSource> importCommands() {
+        return literal("import").requires(RegionController::console)
+                .then(literal("validate").then(argument("file", StringArgumentType.string())
+                        .executes(ctx -> safely(ctx, c -> control().validateImport(c.getSource(), word(c, "file"))))))
+                .then(literal("create").then(argument("parent", StringArgumentType.word())
+                        .then(argument("file", StringArgumentType.string())
+                                .then(argument("name", StringArgumentType.greedyString())
+                                        .executes(ctx -> safely(ctx, c -> control().createImport(c.getSource(),
+                                                word(c, "parent"), word(c, "file"), word(c, "name"))))))))
+                .then(literal("boundary").then(argument("region", StringArgumentType.word())
+                        .then(argument("file", StringArgumentType.string())
+                                .executes(ctx -> safely(ctx, c -> control().boundaryImport(c.getSource(),
+                                        word(c, "region"), word(c, "file")))))));
     }
     private static void setParent(JsonObject body,String parent) {
         if(parent.equals("root")) body.add("parentId",JsonNull.INSTANCE);

@@ -1,15 +1,53 @@
 package team.minefed.regions.server;
 
 import com.sun.net.httpserver.HttpServer;
+import com.google.gson.JsonObject;
 import org.junit.jupiter.api.Test;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Flow;
+import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RegionApiTest {
+    @Test void commandLimitUsesEntireUtf8BodyAndRejectsOversizedPayloadBeforeNetwork() throws Exception {
+        AtomicInteger requests = new AtomicInteger();
+        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/", exchange -> {
+            requests.incrementAndGet();
+            assertEquals(RegionApi.MAX_COMMAND_BYTES, exchange.getRequestBody().readAllBytes().length);
+            byte[] response = "{\"revision\":0,\"regions\":[],\"globalAdmins\":[]}".getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, response.length);
+            exchange.getResponseBody().write(response);
+            exchange.close();
+        });
+        server.start();
+        try {
+            ServerConfig config = new ServerConfig();
+            config.apiBaseUrl = "http://127.0.0.1:" + server.getAddress().getPort();
+            RegionApi api = new RegionApi(config, "local-test-token");
+            JsonObject exact = new JsonObject();
+            exact.addProperty("payload", "");
+            int overhead = RegionApi.JSON.toJson(exact).getBytes(StandardCharsets.UTF_8).length;
+            exact.addProperty("payload", "x".repeat(RegionApi.MAX_COMMAND_BYTES - overhead));
+            assertEquals(0, api.command(exact).revision());
+            assertEquals(1, requests.get());
+
+            exact.addProperty("console", true);
+            assertThrows(IllegalArgumentException.class, () -> api.command(exact));
+            JsonObject unicode = new JsonObject();
+            unicode.addProperty("payload", "한".repeat(RegionApi.MAX_COMMAND_BYTES / 3));
+            assertTrue(RegionApi.JSON.toJson(unicode).length() < RegionApi.MAX_COMMAND_BYTES);
+            assertThrows(IllegalArgumentException.class, () -> api.command(unicode));
+            JsonObject escaped = new JsonObject();
+            escaped.addProperty("payload", "<".repeat(RegionApi.MAX_COMMAND_BYTES / 6));
+            assertThrows(IllegalArgumentException.class, () -> api.command(escaped));
+            assertEquals(1, requests.get(), "Rejected request bodies must never reach the service");
+        } finally { server.stop(0); }
+    }
     @Test void streamedBodyCannotExceedLimit() {
         LimitedBodySubscriber subscriber=new LimitedBodySubscriber(3);
         boolean[] cancelled={false};
